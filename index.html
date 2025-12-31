@@ -34,8 +34,11 @@
         // เรียงไฟล์ล่าสุดขึ้นบน
         data.sort((a, b) => (a.sha > b.sha ? -1 : 1));
 
+        // slice ให้แสดงเฉพาะ 100 ไฟล์ล่าสุด
+        const latest100 = data.slice(0, 100);
+
         fileList.innerHTML = '';
-        data.forEach(file => {
+        latest100.forEach(file => {
           const li = document.createElement('li');
           const a = document.createElement('a');
           a.href = baseUrl + encodeURIComponent(file.name);  // ลิงก์ GitHub Pages
