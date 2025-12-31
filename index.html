@@ -4,33 +4,12 @@
   <meta charset="utf-8">
   <title>My File Server</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin: 10px 0;
-      padding: 10px;
-      background: #f0f0f0;
-      border-radius: 6px;
-    }
-    a {
-      text-decoration: none;
-      color: #0077cc;
-      font-weight: bold;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
+    body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    h1 { text-align: center; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 6px; }
+    a { text-decoration: none; color: #0077cc; font-weight: bold; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -38,12 +17,12 @@
   <ul id="file-list">Loading files...</ul>
 
   <script>
-    const username = 'aoun1390';       // เปลี่ยนเป็น username ของคุณ
-    const repo = 'my-fileserver';      // เปลี่ยนเป็นชื่อ repo ของคุณ
-    const folder = 'files';            // folder บน repo
+    const username = 'aoun1390';       // ชื่อ GitHub ของคุณ
+    const repo = 'my-fileserver';      // ชื่อ repo ของคุณ
+    const folder = 'files';            // โฟลเดอร์เก็บไฟล์
+    const baseUrl = `https://${username}.github.io/${repo}/${folder}/`;
     const fileList = document.getElementById('file-list');
 
-    // ดึงไฟล์จาก GitHub API
     fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
       .then(res => res.json())
       .then(data => {
@@ -52,14 +31,14 @@
           return;
         }
 
-        // เรียงไฟล์ใหม่ล่าสุดขึ้นบน
+        // เรียงไฟล์ล่าสุดขึ้นบน
         data.sort((a, b) => (a.sha > b.sha ? -1 : 1));
 
         fileList.innerHTML = '';
         data.forEach(file => {
           const li = document.createElement('li');
           const a = document.createElement('a');
-          a.href = file.download_url;       // direct link
+          a.href = baseUrl + encodeURIComponent(file.name);  // ลิงก์ GitHub Pages
           a.textContent = file.name;
           a.target = "_blank";              // เปิดในแท็บใหม่
           a.rel = "noopener noreferrer";    // ปลอดภัย
