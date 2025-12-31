@@ -5,7 +5,7 @@
   <title>My File Server</title>
 </head>
 <body>
-  <h1>Files in repository</h1>
+  <h1>Files in repository (Latest on top)</h1>
   <ul id="file-list"></ul>
 
   <script>
@@ -17,6 +17,13 @@
     fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
       .then(res => res.json())
       .then(data => {
+        // sort by sha descending (newest first)
+        data.sort((a, b) => {
+          if (a.sha > b.sha) return -1;
+          if (a.sha < b.sha) return 1;
+          return 0;
+        });
+
         data.forEach(file => {
           const li = document.createElement('li');
           const a = document.createElement('a');
@@ -33,3 +40,4 @@
   </script>
 </body>
 </html>
+
