@@ -17,18 +17,16 @@
     fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
       .then(res => res.json())
       .then(data => {
-        // sort by sha descending (newest first)
-        data.sort((a, b) => {
-          if (a.sha > b.sha) return -1;
-          if (a.sha < b.sha) return 1;
-          return 0;
-        });
+        // sort by sha descending (ใหม่ขึ้นบน)
+        data.sort((a, b) => (a.sha > b.sha ? -1 : 1));
 
         data.forEach(file => {
           const li = document.createElement('li');
           const a = document.createElement('a');
-          a.href = file.download_url; // direct link
+          a.href = file.download_url;     // direct link
           a.textContent = file.name;
+          a.target = "_blank";            // เปิดแท็บใหม่
+          a.rel = "noopener noreferrer";  // ปลอดภัย
           li.appendChild(a);
           fileList.appendChild(li);
         });
@@ -40,4 +38,3 @@
   </script>
 </body>
 </html>
-
