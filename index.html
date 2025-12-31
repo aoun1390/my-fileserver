@@ -1,67 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>My File Server</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>My File Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 0 20px;
-  background: #fafafa;
-}
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-}
-ul {
-  list-style: none;
-  padding: 0;
-}
-li {
-  background: #f0f0f0;
-  margin-bottom: 10px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.file-name {
-  font-weight: bold;
-  color: #0077cc;
-  text-decoration: none;
-  word-break: break-all;
-}
-.file-name:hover {
-  text-decoration: underline;
-}
-.meta {
-  font-size: 12px;
-  color: #666;
-}
-button {
-  padding: 5px 10px;
-  border: none;
-  background: #0077cc;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:hover {
-  background: #005fa3;
-}
-</style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #fafafa;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #f0f0f0;
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    a.file-link {
+      color: #0077cc;
+      font-weight: bold;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    a.file-link:hover {
+      text-decoration: underline;
+    }
+    button {
+      padding: 5px 10px;
+      border: none;
+      background: #0077cc;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .meta {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+  </style>
 </head>
-
 <body>
 
 <h1>My File Server</h1>
 
-<ul id="file-list">Loading...</ul>
+<ul id="file-list">
+  Loading files...
+</ul>
 
 <script>
 const username = 'aoun1390';
@@ -70,16 +73,44 @@ const folder = 'files';
 const MAX_FILES = 100;
 
 const baseUrl = `https://${username}.github.io/${repo}/${folder}/`;
-const listEl = document.getElementById('file-list');
+const fileList = document.getElementById('file-list');
 
-fetch('files.json')
+// ดึงรายชื่อไฟล์
+fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
   .then(res => res.json())
-  .then(files => {
-    // เรียงใหม่ → เก่า
-    files.sort((a, b) => new Date(b.date) - new Date(a.date));
+  .then(async files => {
+    if (!Array.isArray(files)) {
+      fileList.textContent = 'No files found';
+      return;
+    }
 
-    // เอาแค่ 100 ไฟล์
-    files.slice(0, MAX_FILES).forEach(file => {
+    // ดึง commit ล่าสุดของแต่ละไฟล์
+    const filesWithDate = await Promise.all(
+      files.map(async file => {
+        try {
+          const res = await fetch(
+            `https://api.github.com/repos/${username}/${repo}/commits?path=${folder}/${file.name}&per_page=1`
+          );
+          const commits = await res.json();
+          const date = commits[0]?.commit?.author?.date || '1970-01-01';
+          return { ...file, date };
+        } catch {
+          return { ...file, date: '1970-01-01' };
+        }
+      })
+    );
+
+    // เรียงใหม่ → เก่า
+    filesWithDate.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
+    // จำกัด 100 ไฟล์ล่าสุด
+    const latestFiles = filesWithDate.slice(0, MAX_FILES);
+
+    fileList.innerHTML = '';
+
+    latestFiles.forEach(file => {
       const li = document.createElement('li');
 
       const left = document.createElement('div');
@@ -87,13 +118,13 @@ fetch('files.json')
       const a = document.createElement('a');
       a.href = baseUrl + encodeURIComponent(file.name);
       a.textContent = file.name;
-      a.className = 'file-name';
+      a.className = 'file-link';
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
 
       const meta = document.createElement('div');
       meta.className = 'meta';
-      meta.textContent = new Date(file.date).toLocaleString();
+      meta.textContent = 'Updated: ' + new Date(file.date).toLocaleString();
 
       left.appendChild(a);
       left.appendChild(meta);
@@ -108,11 +139,12 @@ fetch('files.json')
 
       li.appendChild(left);
       li.appendChild(btn);
-      listEl.appendChild(li);
+      fileList.appendChild(li);
     });
   })
-  .catch(() => {
-    listEl.textContent = 'Failed to load files';
+  .catch(err => {
+    console.error(err);
+    fileList.textContent = 'Error loading files';
   });
 </script>
 
