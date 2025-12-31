@@ -55,7 +55,7 @@
           btn.textContent = "Copy Link";
           btn.onclick = () => {
             navigator.clipboard.writeText(baseUrl + encodeURIComponent(file.name))
-              .then(() => alert('Link copied!'))
+              //.then(() => alert('Link copied!'))
               .catch(() => alert('Failed to copy link'));
           };
 
