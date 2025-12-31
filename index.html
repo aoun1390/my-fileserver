@@ -1,72 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>My File Server</title>
-  <style>
-    body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 0 20px; }
-    h1 { text-align: center; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; }
-    a { text-decoration: none; color: #0077cc; font-weight: bold; margin-right: 10px; }
-    a:hover { text-decoration: underline; }
-    button { padding: 4px 8px; border: none; background: #0077cc; color: #fff; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #005fa3; }
-  </style>
+<meta charset="utf-8">
+<title>My File Server</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+  background: #fafafa;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+li {
+  background: #f0f0f0;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.file-name {
+  font-weight: bold;
+  color: #0077cc;
+  text-decoration: none;
+  word-break: break-all;
+}
+.file-name:hover {
+  text-decoration: underline;
+}
+.meta {
+  font-size: 12px;
+  color: #666;
+}
+button {
+  padding: 5px 10px;
+  border: none;
+  background: #0077cc;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background: #005fa3;
+}
+</style>
 </head>
+
 <body>
-  <h1>My File Server</h1>
-  <ul id="file-list">Loading files...</ul>
 
-  <script>
-    const username = 'aoun1390';
-    const repo = 'my-fileserver';
-    const folder = 'files';
-    const baseUrl = `https://${username}.github.io/${repo}/${folder}/`;
-    const fileList = document.getElementById('file-list');
+<h1>My File Server</h1>
 
-    fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!Array.isArray(data)) {
-          fileList.textContent = 'No files found.';
-          return;
-        }
+<ul id="file-list">Loading...</ul>
 
-        // เรียงไฟล์ล่าสุดขึ้นบน
-        data.sort((a, b) => (a.sha > b.sha ? -1 : 1));
+<script>
+const username = 'aoun1390';
+const repo = 'my-fileserver';
+const folder = 'files';
+const MAX_FILES = 100;
 
-        // แสดงเฉพาะ 100 ไฟล์ล่าสุด
-        //const latest100 = data.slice(0, 100);
+const baseUrl = `https://${username}.github.io/${repo}/${folder}/`;
+const listEl = document.getElementById('file-list');
 
-        fileList.innerHTML = '';
-        data.forEach(file => {
-          const li = document.createElement('li');
+fetch('files.json')
+  .then(res => res.json())
+  .then(files => {
+    // เรียงใหม่ → เก่า
+    files.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-          // ชื่อไฟล์เป็นลิงก์เปิดแท็บใหม่
-          const a = document.createElement('a');
-          a.href = baseUrl + encodeURIComponent(file.name);
-          a.textContent = file.name;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
+    // เอาแค่ 100 ไฟล์
+    files.slice(0, MAX_FILES).forEach(file => {
+      const li = document.createElement('li');
 
-          // ปุ่ม copy link เงียบ ๆ
-          const btn = document.createElement('button');
-          btn.textContent = "Copy Link";
-          btn.onclick = () => {
-            navigator.clipboard.writeText(baseUrl + encodeURIComponent(file.name))
-              .catch(() => console.error('Failed to copy link'));
-          };
+      const left = document.createElement('div');
 
-          li.appendChild(a);
-          li.appendChild(btn);
-          fileList.appendChild(li);
-        });
-      })
-      .catch(err => {
-        fileList.textContent = 'Error loading files';
-        console.error(err);
-      });
-  </script>
+      const a = document.createElement('a');
+      a.href = baseUrl + encodeURIComponent(file.name);
+      a.textContent = file.name;
+      a.className = 'file-name';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = new Date(file.date).toLocaleString();
+
+      left.appendChild(a);
+      left.appendChild(meta);
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Copy Link';
+      btn.onclick = () => {
+        navigator.clipboard.writeText(
+          baseUrl + encodeURIComponent(file.name)
+        );
+      };
+
+      li.appendChild(left);
+      li.appendChild(btn);
+      listEl.appendChild(li);
+    });
+  })
+  .catch(() => {
+    listEl.textContent = 'Failed to load files';
+  });
+</script>
+
 </body>
 </html>
