@@ -40,7 +40,7 @@
         const latest100 = data.slice(0, 100);
 
         fileList.innerHTML = '';
-        latest100.forEach(file => {
+        data.forEach(file => {
           const li = document.createElement('li');
 
           // ชื่อไฟล์เป็นลิงก์เปิดแท็บใหม่
