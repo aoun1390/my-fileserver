@@ -5,10 +5,31 @@
   <title>My File Server</title>
 </head>
 <body>
-  <h1>My File Server</h1>
-  <ul>
-    <li><a href="files/test.pdf">test.pdf</a></li>
-    <li><a href="files/data.json">data.json</a></li>
-  </ul>
+  <h1>Files in repository</h1>
+  <ul id="file-list"></ul>
+
+  <script>
+    const username = 'aoun1390';
+    const repo = 'my-fileserver';
+    const folder = 'files';
+    const fileList = document.getElementById('file-list');
+
+    fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folder}`)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(file => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = file.download_url; // direct link
+          a.textContent = file.name;
+          li.appendChild(a);
+          fileList.appendChild(li);
+        });
+      })
+      .catch(err => {
+        fileList.textContent = 'Error loading files';
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
