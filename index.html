@@ -50,13 +50,12 @@
           a.target = "_blank";
           a.rel = "noopener noreferrer";
 
-          // ปุ่ม copy link
+          // ปุ่ม copy link เงียบ ๆ
           const btn = document.createElement('button');
           btn.textContent = "Copy Link";
           btn.onclick = () => {
             navigator.clipboard.writeText(baseUrl + encodeURIComponent(file.name))
-              //.then(() => alert('Link copied!'))
-              .catch(() => alert('Failed to copy link'));
+              .catch(() => console.error('Failed to copy link'));
           };
 
           li.appendChild(a);
